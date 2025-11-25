@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"sync"
 	"time"
 
@@ -106,11 +107,12 @@ func (s *State) AddMessage(msg *pb.Message) bool {
 
 	// Notify all subscribers of this room
 	if subs, exists := s.subscribers[msg.RoomId]; exists {
-		for _, ch := range subs {
+		for clientID, ch := range subs {
 			select {
 			case ch <- msg:
 			default:
-				// Channel is full, skip
+				// Channel is full, log warning but don't block
+				log.Printf("Warning: Message channel full for client %s in room %s, message dropped", clientID, msg.RoomId)
 			}
 		}
 	}

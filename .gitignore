@@ -15,6 +15,9 @@ bin/
 # Go workspace file
 go.work
 
+# Vendor directory (dependencies are tracked via go.mod/go.sum)
+vendor/
+
 # IDE
 .idea/
 .vscode/

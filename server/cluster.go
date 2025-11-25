@@ -64,12 +64,19 @@ func (c *Cluster) Start() {
 func (c *Cluster) connectToNode(address string) {
 	log.Printf("Attempting to connect to node at %s", address)
 	
+	// Maximum backoff delay in seconds
+	const maxBackoffSeconds = 30
+	
 	// Retry with exponential backoff
 	for retries := 0; retries < 10; retries++ {
 		conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Printf("Failed to connect to %s: %v (retry %d)", address, err, retries+1)
-			time.Sleep(time.Duration(1<<retries) * time.Second)
+			backoff := 1 << retries
+			if backoff > maxBackoffSeconds {
+				backoff = maxBackoffSeconds
+			}
+			time.Sleep(time.Duration(backoff) * time.Second)
 			continue
 		}
 
@@ -83,7 +90,11 @@ func (c *Cluster) connectToNode(address string) {
 		if err != nil {
 			conn.Close()
 			log.Printf("Failed to ping %s: %v (retry %d)", address, err, retries+1)
-			time.Sleep(time.Duration(1<<retries) * time.Second)
+			backoff := 1 << retries
+			if backoff > maxBackoffSeconds {
+				backoff = maxBackoffSeconds
+			}
+			time.Sleep(time.Duration(backoff) * time.Second)
 			continue
 		}
 

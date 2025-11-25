@@ -1,22 +1,16 @@
 # Build stage
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy source code
+# Copy all source code and vendored dependencies
 COPY . .
 
-# Build the client
-RUN CGO_ENABLED=0 GOOS=linux go build -o /client ./client
+# Build the client with vendored dependencies
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o /client ./client
 
 # Run stage
 FROM alpine:3.19
-
-RUN apk --no-cache add ca-certificates
 
 WORKDIR /
 

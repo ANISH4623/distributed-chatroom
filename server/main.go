@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -73,7 +74,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"running","node_id":"` + nodeID + `","connected_nodes":` + 
-			string(rune('0'+cluster.GetNodeCount())) + `}`))
+			strconv.Itoa(cluster.GetNodeCount()) + `}`))
 	})
 
 	// Start WebSocket server

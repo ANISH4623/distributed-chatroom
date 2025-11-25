@@ -79,7 +79,21 @@ func NewWSServer(state *State, cluster *Cluster, nodeID string) *WSServer {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			CheckOrigin: func(r *http.Request) bool {
-				return true // Allow all origins for demo purposes
+				// Allow same-origin requests and localhost for development
+				// In production, implement stricter origin validation
+				origin := r.Header.Get("Origin")
+				if origin == "" {
+					return true // Allow requests without Origin header (like direct WebSocket clients)
+				}
+				// Allow localhost origins for development
+				return origin == "http://localhost:8080" || 
+					origin == "http://localhost:8081" || 
+					origin == "http://localhost:8082" || 
+					origin == "http://localhost:8083" ||
+					origin == "http://127.0.0.1:8080" ||
+					origin == "http://127.0.0.1:8081" ||
+					origin == "http://127.0.0.1:8082" ||
+					origin == "http://127.0.0.1:8083"
 			},
 		},
 	}
