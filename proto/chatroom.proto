@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package chatroom;
+
+option go_package = "distributed-chatroom/proto";
+
+// ClusterService handles inter-server communication
+service ClusterService {
+    // Sync synchronizes state between cluster nodes
+    rpc Sync(SyncRequest) returns (SyncResponse);
+    
+    // BroadcastMessage propagates a message to other nodes
+    rpc BroadcastMessage(MessageRequest) returns (MessageResponse);
+    
+    // BroadcastRoom propagates a new room to other nodes
+    rpc BroadcastRoom(RoomRequest) returns (RoomResponse);
+    
+    // Ping checks if a node is alive
+    rpc Ping(PingRequest) returns (PingResponse);
+    
+    // JoinCluster notifies other nodes about a new node
+    rpc JoinCluster(JoinRequest) returns (JoinResponse);
+}
+
+// Message represents a chat message
+message Message {
+    string id = 1;
+    string room_id = 2;
+    string username = 3;
+    string content = 4;
+    int64 timestamp = 5;
+    string origin_node = 6;
+}
+
+// Room represents a chat room
+message Room {
+    string id = 1;
+    string name = 2;
+    int64 created_at = 3;
+    string origin_node = 4;
+    repeated Message messages = 5;
+}
+
+// SyncRequest is sent when a node wants to sync its state
+message SyncRequest {
+    string node_id = 1;
+    int64 last_sync_time = 2;
+}
+
+// SyncResponse contains the full state for synchronization
+message SyncResponse {
+    repeated Room rooms = 1;
+    int64 sync_time = 2;
+    bool success = 3;
+}
+
+// MessageRequest is sent to broadcast a message
+message MessageRequest {
+    Message message = 1;
+}
+
+// MessageResponse acknowledges message receipt
+message MessageResponse {
+    bool success = 1;
+}
+
+// RoomRequest is sent to broadcast a new room
+message RoomRequest {
+    Room room = 1;
+}
+
+// RoomResponse acknowledges room creation
+message RoomResponse {
+    bool success = 1;
+}
+
+// PingRequest is used for health checks
+message PingRequest {
+    string node_id = 1;
+}
+
+// PingResponse confirms the node is alive
+message PingResponse {
+    string node_id = 1;
+    bool alive = 2;
+}
+
+// JoinRequest notifies existing nodes about a new node
+message JoinRequest {
+    string node_id = 1;
+    string address = 2;
+}
+
+// JoinResponse acknowledges the join request
+message JoinResponse {
+    bool success = 1;
+    repeated string known_nodes = 2;
+}
