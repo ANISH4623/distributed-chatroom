@@ -1,0 +1,76 @@
+services:
+  server1:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: chatroom-server1
+    environment:
+      - NODE_ID=server1
+      - WS_PORT=8080
+      - GRPC_PORT=9090
+      - CLUSTER_ADDR=server1:9090
+      - SEED_NODES=server2:9090,server3:9090
+    ports:
+      - "8081:8080"
+      - "9091:9090"
+    networks:
+      - chatroom-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  server2:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: chatroom-server2
+    environment:
+      - NODE_ID=server2
+      - WS_PORT=8080
+      - GRPC_PORT=9090
+      - CLUSTER_ADDR=server2:9090
+      - SEED_NODES=server1:9090,server3:9090
+    ports:
+      - "8082:8080"
+      - "9092:9090"
+    networks:
+      - chatroom-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  server3:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: chatroom-server3
+    environment:
+      - NODE_ID=server3
+      - WS_PORT=8080
+      - GRPC_PORT=9090
+      - CLUSTER_ADDR=server3:9090
+      - SEED_NODES=server1:9090,server2:9090
+    ports:
+      - "8083:8080"
+      - "9093:9090"
+    networks:
+      - chatroom-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+networks:
+  chatroom-network:
+    driver: bridge
